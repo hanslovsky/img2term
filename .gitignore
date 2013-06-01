@@ -1,0 +1,13 @@
+*~
+a.out
+*.o
+*.png
+*.csv
+*.pdf
+*.so
+CMakeCache.txt
+CMakeFiles
+Makefile
+cmake_install.cmake
+install_manifest.txt
+img2term*
