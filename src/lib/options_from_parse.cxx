@@ -96,7 +96,21 @@ double OptionBuilder::get_ratio() {
   } else {
     throw ParserException("Ratio not specified!");
   }
-}    
+}
+
+
+uint OptionBuilder::get_margin() {
+  std::string margin;
+  if (get_option("margin", margin)) {
+    try {
+      return std::stoul(margin);
+    } catch(std::invalid_argument) {
+      throw ParserException("Could not convert to unsigned int: " + margin);
+    }
+  } else {
+    throw ParserException("Margin not specified!");
+  }
+}
 
 
 int OptionBuilder::get_option(const std::string& option, std::string& value) {
@@ -115,7 +129,8 @@ boost::shared_ptr<img2term::OptionClass> OptionBuilder::build() {
                                                                                 characters(),
                                                                                 char_drawer_strategy(),
                                                                                 averaging_strategy(),
-                                                                                get_ratio()
+                                                                                get_ratio(),
+                                                                                get_margin()
                                                                                 )
                                                       );
   return option_ptr;

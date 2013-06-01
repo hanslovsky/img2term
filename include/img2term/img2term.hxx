@@ -297,6 +297,7 @@ namespace img2term {
     CharDrawerStrategyPtr char_drawer_strategy_;
     AveragingStrategyPtr averaging_strategy_;
     double aspect_ratio_;
+    std::string margin_string_;
   public:
     OptionClass() :
       n_chars_per_column_(80),
@@ -312,17 +313,20 @@ namespace img2term {
                 CharVec char_list,
                 CharDrawerStrategyPtr char_drawer_strategy,
                 AveragingStrategyPtr averaging_strategy,
-                double aspect_ratio) :
+                double aspect_ratio,
+                uint margin) :
       n_chars_per_column_(n_chars_per_column),
       color_match_strategy_(color_match_strategy),
       char_list_(char_list),
       char_drawer_strategy_(char_drawer_strategy),
       averaging_strategy_(averaging_strategy),
-      aspect_ratio_(aspect_ratio)
+      aspect_ratio_(aspect_ratio),
+      margin_string_(margin, ' ')
     {}
 
     CharDrawerStrategyPtr get_char_drawer_strategy() const;
     char print_char() const;
+    const std::string& get_margin_string() const;
 
     friend PatchArray2DPtr PatchArray2DFactory(vigra::MultiArrayView<3, uint> image, OptionClass options);
     friend class PatchArray2D;

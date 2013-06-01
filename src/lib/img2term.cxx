@@ -234,6 +234,11 @@ namespace img2term {
   }
 
 
+  const std::string& OptionClass::get_margin_string() const {
+    return margin_string_;
+  }
+
+
   PatchArray2DPtr PatchArray2DFactory(vigra::MultiArrayView<3, uint> image, OptionClass options) {
     uint Y = image.shape()[1];
     uint X = image.shape()[0];
@@ -311,6 +316,7 @@ namespace img2term {
     std::vector<std::vector<ImagePatch> >::const_iterator it_2d;
     std::vector<ImagePatch>::const_iterator it_1d;
     for (it_2d = patch_array.patches_.begin(); it_2d != patch_array.patches_.end(); ++it_2d) {
+      os << patch_array.options_.get_margin_string();
       for (it_1d = it_2d->begin(); it_1d != it_2d->end(); ++it_1d) {
         
         os << *it_1d << patch_array.options_.print_char();

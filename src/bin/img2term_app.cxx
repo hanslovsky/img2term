@@ -71,7 +71,8 @@ int main(int argc, char** argv) {
       ("drawer,d", po::value<std::string>()->required(), "how to char from existing list")
       ("averaging,a", po::value<std::string>()->required(), "how to average on patches")
       ("ratio,r", po::value<std::string>()->required(), "ratio of height and width of a patch")
-      ("image,i", po::value<std::string>()->required(), "image to be converted");
+      ("image,i", po::value<std::string>()->required(), "image to be converted")
+      ("margin,M", po::value<std::string>()->default_value("0"), "left side margin");
 
     po::variables_map vm;
     try {

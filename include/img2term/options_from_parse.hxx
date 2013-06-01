@@ -25,6 +25,7 @@ private:
   img2term::CharDrawerStrategyPtr char_drawer_strategy();
   img2term::AveragingStrategyPtr averaging_strategy();
   double get_ratio();
+  uint get_margin();
 
   int get_option(const std::string& option, std::string& value);
 
