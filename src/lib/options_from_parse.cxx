@@ -39,6 +39,8 @@ img2term::ColorMatchStrategyPtr OptionBuilder::color_match_strategy() {
       return img2term::ColorMatchStrategyPtr(new img2term::ColorMatchStrategyASCII(symbols));
     } else if(strategy.compare("color") == 0) {
       return img2term::ColorMatchStrategyPtr(new img2term::ColorMatchStrategyDistance);
+    } else if(strategy.compare("color_no_bg") == 0) {
+      return img2term::ColorMatchStrategyPtr(new img2term::ColorMatchStrategyDistanceNoBG);
     } else {
       throw ParserException("Matching Strategy does not match any existing [ascii, color]: " + strategy);
     }

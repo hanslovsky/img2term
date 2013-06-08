@@ -65,7 +65,8 @@ int main(int argc, char** argv) {
     std::string columns_str = "number of columns, i.e. the width of your output \"image\"";
     std::string matching_str = std::string("how to match patch and char:\n") +
       "  -> ascii: match grey value (average of RGB) to a character in predefined list\n" +
-      "  -> color: match RGB to (predefined) terminal colors";
+      "  -> color: match RGB to (predefined) terminal colors\n" +
+      "  -> color_no_bg: as color, but do not paint background";
     std::string drawer_str = std::string("how to draw a char from existing list:\n") +
       "  -> ascii: do not add an additional char\n" +
       "  -> single: use the same char for every patch";

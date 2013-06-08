@@ -55,6 +55,9 @@ namespace img2term {
   class ColorMatchStrategyDistance;
 
 
+  class ColorMatchStrategyDistanceNoBG;
+
+
   class CharDrawerStrategyBase;
 
 
@@ -266,6 +269,21 @@ namespace img2term {
     {}
     virtual TermColorType operator()(ImgColorType color, bool color_changed) const;
   };
+
+
+  class ColorMatchStrategyDistanceNoBG : public ColorMatchStrategyBase {
+  private:
+    DistanceStrategyPtr distance_;
+  public:
+    ColorMatchStrategyDistanceNoBG() :
+      distance_(DistanceStrategyPtr(new DistanceStrategyRGB))
+    {}
+    ColorMatchStrategyDistanceNoBG(DistanceStrategyPtr distance) :
+      distance_(distance)
+    {}
+    virtual TermColorType operator()(ImgColorType color, bool color_changed) const;
+  };
+  
 
   class CharDrawerStrategyBase {
   private:

@@ -148,6 +148,9 @@ namespace img2term {
   }
 
 
+  ////
+  //// ColorMatchStrategyDistance
+  ////
   TermColorType ColorMatchStrategyDistance::operator()(ImgColorType color, bool color_changed) const {
     if (color_changed) {
       uint argmin = 0;
@@ -174,7 +177,34 @@ namespace img2term {
       return TermColorType("");
     }
   }
-    
+////
+  //// ColorMatchStrategyDistanceNoBG
+  ////
+  TermColorType ColorMatchStrategyDistanceNoBG::operator()(ImgColorType color, bool color_changed) const {
+    if (color_changed) {
+      uint argmin = 0;
+      double min = std::numeric_limits<double>::max();
+      uint* c_ptr = COLOR_ARR_256;
+      double curr_dist;
+      for (uint index = 0; c_ptr != COLOR_ARR_256 + 768; ++index, c_ptr+=3) {
+        ImgColorType comp_color(vigra::TinyVector<uint, 3>(*(c_ptr),
+                                                           *(c_ptr+1),
+                                                           *(c_ptr+2)
+                                                           ));
+        curr_dist = (*distance_)(color, comp_color);
+        if (curr_dist < min) {
+          min = curr_dist;
+          argmin = index;
+        }
+      }
+      std::string argmin_string = std::to_string(argmin);
+      return TermColorType("\033[38;05;" +
+                           argmin_string + 
+                           "m");
+    } else {
+      return TermColorType("");
+    }
+  }    
 
 
   ////
