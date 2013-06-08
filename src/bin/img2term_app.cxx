@@ -62,17 +62,31 @@ int main(int argc, char** argv) {
 
 
   try {
+    std::string columns_str = "number of columns, i.e. the width of your output \"image\"";
+    std::string matching_str = std::string("how to match patch and char:\n") +
+      "  -> ascii: match grey value (average of RGB) to a character in predefined list\n" +
+      "  -> color: match RGB to (predefined) terminal colors";
+    std::string drawer_str = std::string("how to draw a char from existing list:\n") +
+      "  -> ascii: do not add an additional char\n" +
+      "  -> single: use the same char for every patch";
+    std::string averaging_str = std::string("how to average on patches:\n") +
+      "  -> mean: use mean\n" +
+      "  -> median: use median";
+    std::string ratio_str = "ratio of height and width of a patch";
+    std::string image_str = "image to be converted";
+    std::string margin_str = "left side margin in characters";
+    
     namespace po = boost::program_options;
     po::options_description desc("Options");
     desc.add_options()
       ("help,h", "Print help message")
-      ("columns,c", po::value<std::string>()->required(), "number of columns")
-      ("matching,m", po::value<std::string>()->required(),"how to match patch and char")
-      ("drawer,d", po::value<std::string>()->required(), "how to char from existing list")
-      ("averaging,a", po::value<std::string>()->required(), "how to average on patches")
-      ("ratio,r", po::value<std::string>()->required(), "ratio of height and width of a patch")
-      ("image,i", po::value<std::string>()->required(), "image to be converted")
-      ("margin,M", po::value<std::string>()->default_value("0"), "left side margin");
+      ("columns,c", po::value<std::string>()->required(), columns_str.c_str())
+      ("matching,m", po::value<std::string>()->required(), matching_str.c_str())
+      ("drawer,d", po::value<std::string>()->required(), drawer_str.c_str())
+      ("averaging,a", po::value<std::string>()->required(), averaging_str.c_str())
+      ("ratio,r", po::value<std::string>()->required(), ratio_str.c_str())
+      ("image,i", po::value<std::string>()->required(), image_str.c_str())
+      ("margin,M", po::value<std::string>()->default_value("0"), margin_str.c_str());
 
     po::variables_map vm;
     try {

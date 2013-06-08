@@ -40,7 +40,7 @@ img2term::ColorMatchStrategyPtr OptionBuilder::color_match_strategy() {
     } else if(strategy.compare("color") == 0) {
       return img2term::ColorMatchStrategyPtr(new img2term::ColorMatchStrategyDistance);
     } else {
-      throw ParserException("Matching Strategy does not match any existing: " + strategy);
+      throw ParserException("Matching Strategy does not match any existing [ascii, color]: " + strategy);
     }
   } else {
     throw ParserException("Matching Strategy not specified!");
@@ -61,7 +61,7 @@ img2term::CharDrawerStrategyPtr OptionBuilder::char_drawer_strategy() {
     } else if (strategy.compare("single") == 0) {
       return img2term::CharDrawerStrategyPtr(new img2term::CharDrawerStrategySingleChar);
     } else {
-      throw ParserException("Char Drawing Strategy does not match any existing: " + strategy);
+      throw ParserException("Char Drawing Strategy does not match any existing [ascii, single]: " + strategy);
     }
   } else {
     throw ParserException("Char Drawing Strategy not specified!");
@@ -77,7 +77,7 @@ img2term::AveragingStrategyPtr OptionBuilder::averaging_strategy() {
     } else if(strategy.compare("median") == 0) {
       return img2term::AveragingStrategyPtr(new img2term::AveragingStrategyMedian);
     } else {
-      throw ParserException("Averaging Strategy does not match any exisiting: " + strategy);
+      throw ParserException("Averaging Strategy does not match any exisiting [mean, median]: " + strategy);
     }
   } else {
     throw ParserException("Averaging Strategy not specified!");
