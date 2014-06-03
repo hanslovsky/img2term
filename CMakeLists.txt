@@ -1,4 +1,9 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
+
+SET(CMAKE_CXX_FLAGS "-Wall -Wextra -Wfatal-errors -std=c++11 -pedantic -pthread" CACHE STRING "CXX Flags for all builds")
+SET(CMAKE_CXX_FLAGS_DEBUG "-g -O0" CACHE STRING "CXX Flags debug specific")
+SET(CMAKE_CXX_FLAGS_RELEASE "-O3 -Werror -DNDEBUG" CACHE STRING "CXX Flags release specific")
+
 PROJECT(img2term)
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake_extensions/)
@@ -12,9 +17,8 @@ FIND_PACKAGE(Boost COMPONENTS program_options)
 
 
 
-SET(CMAKE_CXX_FLAGS "-Wall -Wextra -Wfatal-errors -std=c++0x -pedantic -pthread")
-SET(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
-SET(CMAKE_CXX_FLAGS_RELEASE "-O3 -Werror")	
+
+
 
 
 
