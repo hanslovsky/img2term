@@ -1,5 +1,11 @@
 // stl
 #include <string>
+#include <memory>
+#include <iostream>
+
+// vigra
+#include <vigra/multi_array.hxx>
+#include <vigra/unittest.hxx>
 
 // gtest
 #include <gtest/gtest.h>
@@ -7,47 +13,45 @@
 // img2term
 #include "img2term/modifier.hxx"
 
-namespace {
+using namespace img2term;
 
-// The fixture for testing class Foo.
-class ModifierTest : public ::testing::Test {
- protected:
-  // You can remove any or all of the following functions if its body
-  // is empty.
+class TestDecorator : public ModifierDecorator  {
+public:
+TestDecorator() : ModifierDecorator() {}
+TestDecorator( std::shared_ptr<ModifierBase> modifier, int N ) :
+    ModifierDecorator( modifier ), N_( N )
+{}
 
-  ModifierTest() {
-    // You can do set-up work for each test here.
-  }
+    virtual std::string generate( const vigra::MultiArrayView<3, uint> patch ) const {
+std::string res = "TestDecorator" + std::to_string( N_ ) + " " + ModifierDecorator::generate( patch );
+return res;
+}
 
-  virtual ~ModifierTest() {
-    // You can do clean-up work that doesn't throw exceptions here.
-  }
+private:
+    int N_;
 
-  // If the constructor and destructor are not enough for setting up
-  // and cleaning up each test, you can define the following methods:
-
-  virtual void SetUp() {
-    // Code here will be called immediately after the constructor (right
-    // before each test).
-  }
-
-  virtual void TearDown() {
-    // Code here will be called immediately after each test (right
-    // before the destructor).
-  }
-
-  // Objects declared here can be used by all tests in the test case for Foo.
 };
 
+namespace {
+
+
 // Tests that the Foo::Bar() method does Abc.
-TEST_F(ModifierTest, TheyDance) {
-const std::string input_filepath = "this/package/testdata/myinputfile.dat";
-const std::string output_filepath = "this/package/testdata/myoutputfile.dat";
-  EXPECT_EQ(0, 1);
+TEST(ModifierTest, Decorate) {
+
+std::shared_ptr<ModifierBase> m1( new ModifierBase );
+  
+  std::shared_ptr<ModifierBase> m2( new TestDecorator(  m1, 2 ) );
+
+TestDecorator dec( std::move( m2 ), 1 );
+
+auto test_string = dec.generate( vigra::MultiArray<3, uint>() );
+
+EXPECT_EQ( test_string, std::string( "TestDecorator1 TestDecorator2 " ) );
+
 }
 
 // Tests that Foo does Xyz.
-TEST_F(ModifierTest, AndSing) {
+TEST(ModifierTest, AndSing) {
   // Exercises the Xyz feature of Foo.
 }
 
