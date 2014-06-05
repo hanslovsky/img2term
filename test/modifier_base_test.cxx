@@ -11,7 +11,7 @@
 #include <gtest/gtest.h>
 
 // img2term
-#include "img2term/modifier.hxx"
+#include "img2term/modifier/modifier_base.hxx"
 
 using namespace img2term;
 

@@ -31,7 +31,7 @@ endif(GTEST_FOUND)
 
 INCLUDE_DIRECTORIES("${PROJECT_SOURCE_DIR}/include/")
 
-FILE(GLOB LIB_CXX "src/lib/line.cxx" "src/lib/modifier.cxx")
+FILE(GLOB LIB_CXX "src/lib/line.cxx" "src/lib/modifier_base.cxx")
 ADD_LIBRARY(img2term SHARED ${LIB_CXX})
 # ADD_EXECUTABLE(img2term_app src/bin/img2term_app.cxx)
 # SET_TARGET_PROPERTIES(img2term_app PROPERTIES OUTPUT_NAME img2term)

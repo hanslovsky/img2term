@@ -7,7 +7,7 @@
 #include <vigra/multi_array.hxx>
 
 // img2term
-#include "img2term/modifier.hxx"
+#include "img2term/modifier/modifier_base.hxx"
 
 
 namespace img2term {
