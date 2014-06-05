@@ -12,8 +12,8 @@
 namespace img2term
 {
 
-Line::Line( std::unique_ptr<ModifierBase> modifier, std::shared_ptr<Options> options ) :
-    modifier_( std::move( modifier ) ),
+Line::Line( std::shared_ptr<ModifierBase> modifier, std::shared_ptr<Options> options ) :
+    modifier_( modifier ),
     options_( options )
 {
   
