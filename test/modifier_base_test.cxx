@@ -16,19 +16,19 @@
 using namespace img2term;
 
 class TestDecorator : public ModifierDecorator  {
-public:
-TestDecorator() : ModifierDecorator() {}
-TestDecorator( std::shared_ptr<ModifierBase> modifier, int N ) :
-    ModifierDecorator( modifier ), N_( N )
-{}
+ public:
+  TestDecorator() : ModifierDecorator() {}
+  TestDecorator( std::shared_ptr<ModifierBase> modifier, int N ) :
+      ModifierDecorator( modifier ), N_( N )
+  {}
 
-    virtual std::string generate( const vigra::MultiArrayView<3, uint> patch ) const {
-std::string res = "TestDecorator" + std::to_string( N_ ) + " " + ModifierDecorator::generate( patch );
-return res;
-}
+  virtual std::string generate( const vigra::MultiArrayView<3, uint> patch ) const {
+    std::string res = "TestDecorator" + std::to_string( N_ ) + " " + ModifierDecorator::generate( patch );
+    return res;
+  }
 
-private:
-    int N_;
+ private:
+  int N_;
 
 };
 
@@ -38,15 +38,15 @@ namespace {
 // Tests that the Foo::Bar() method does Abc.
 TEST(ModifierTest, Decorate) {
 
-std::shared_ptr<ModifierBase> m1( new ModifierBase );
+  std::shared_ptr<ModifierBase> m1( new ModifierBase );
   
   std::shared_ptr<ModifierBase> m2( new TestDecorator(  m1, 2 ) );
 
-TestDecorator dec( std::move( m2 ), 1 );
+  TestDecorator dec( std::move( m2 ), 1 );
 
-auto test_string = dec.generate( vigra::MultiArray<3, uint>() );
+  auto test_string = dec.generate( vigra::MultiArray<3, uint>() );
 
-EXPECT_EQ( test_string, std::string( "TestDecorator1 TestDecorator2 " ) );
+  EXPECT_EQ( test_string, std::string( "TestDecorator1 TestDecorator2 " ) );
 
 }
 
