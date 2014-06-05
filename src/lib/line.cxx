@@ -6,7 +6,7 @@
 
 // img2term
 #include "img2term/line.hxx"
-#include "img2term/modifier.hxx"
+#include "img2term/modifier/modifier_base.hxx"
 #include "img2term/options.hxx"
 
 namespace img2term
