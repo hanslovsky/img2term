@@ -22,9 +22,13 @@ class TestDecorator : public ModifierDecorator  {
       ModifierDecorator( modifier ), N_( N )
   {}
 
-  virtual std::string generate( const vigra::MultiArrayView<3, uint> patch ) const {
-    std::string res = "TestDecorator" + std::to_string( N_ ) + " " + ModifierDecorator::generate( patch );
-    return res;
+  // virtual std::string generate( const vigra::MultiArrayView<3, uint> patch ) const {
+  //   std::string res = "TestDecorator" + std::to_string( N_ ) + " " + ModifierDecorator::generate( patch );
+  //   return res;
+  // }
+ protected:
+  virtual std::string generate_own_string( const vigra::MultiArrayView<3, uint> /* patch */ ) const {
+    return std::string( "TestDecorator" ) + std::to_string( N_ ) + " ";
   }
 
  private:

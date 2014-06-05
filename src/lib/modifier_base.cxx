@@ -55,7 +55,13 @@ ModifierDecorator::ModifierDecorator( std::shared_ptr<ModifierBase> modifier ) :
 
 std::string ModifierDecorator::generate( const vigra::MultiArrayView<3, uint> patch ) const
 {
-  return modifier_->generate( patch );
+  return generate_own_string( patch ) + modifier_->generate( patch );
+}
+
+
+std::string ModifierDecorator::generate_own_string( const vigra::MultiArrayView<3, uint> patch ) const
+{
+  return "";
 }
 
 
