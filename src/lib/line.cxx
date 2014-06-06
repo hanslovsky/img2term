@@ -12,7 +12,7 @@
 namespace img2term
 {
 
-Line::Line( std::shared_ptr<ModifierBase> modifier, std::shared_ptr<Options> options ) :
+Line::Line( std::shared_ptr<ModifierBase> modifier, const Options& options ) :
     modifier_( modifier ),
     options_( options )
 {
@@ -20,20 +20,20 @@ Line::Line( std::shared_ptr<ModifierBase> modifier, std::shared_ptr<Options> opt
 }
 
 
-std::string&& Line::transform( const vigra::MultiArrayView<3, uint> row )
+std::string Line::operator() ( const vigra::MultiArrayView<3, uint> row ) const
 {
   typedef vigra::MultiArray<3, uint>::difference_type Shape;
   std::string res;
-  for ( int xLow = 0; xLow < row.shape()[0]; xLow += options_->xStride )
+  for ( int xLow = 0; xLow < row.shape()[0]; xLow += options_.xStride )
   {
     const vigra::MultiArrayView<3, uint> patch = row.subarray
         (
         Shape( xLow, 0, 0 ),
-        Shape( xLow + options_->xStride, row.shape()[1], row.shape()[2] )
+        Shape( xLow + options_.xStride, row.shape()[1], row.shape()[2] )
         );
     res.append( modifier_->generate( patch ) );
   }
-  return std::move( res );
+  return res;
 }
 
 } /* namespace img2term */

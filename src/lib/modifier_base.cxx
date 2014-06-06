@@ -16,7 +16,7 @@ namespace img2term {
 //// ModifierBase
 ////
 ModifierBase::ModifierBase() {
-
+  
 }
 
 
@@ -59,7 +59,7 @@ std::string ModifierDecorator::generate( const vigra::MultiArrayView<3, uint> pa
 }
 
 
-std::string ModifierDecorator::generate_own_string( const vigra::MultiArrayView<3, uint> patch ) const
+std::string ModifierDecorator::generate_own_string( const vigra::MultiArrayView<3, uint> /* patch */ ) const
 {
   return "";
 }
