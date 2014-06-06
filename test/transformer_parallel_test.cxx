@@ -2,6 +2,7 @@
 #include <string>
 #include <memory>
 #include <iostream>
+#include <iomanip>   // setfill, setw
 
 // vigra
 #include <vigra/multi_array.hxx>
@@ -36,7 +37,14 @@ TEST(ModifierTest, Decorate) {
   for ( auto& it : vec ) {
     std::cout << it << std::endl;
   }
+
+  options.modifier_type = "";
+  vec = tp.generateString( options );
+  std::cout << vec.size() << std::endl;
   
+  for ( auto& it : vec ) {
+    std::cout << it << std::endl;
+  }
   
 }
 
