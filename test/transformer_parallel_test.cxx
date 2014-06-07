@@ -21,7 +21,7 @@ namespace {
 
 
 // Tests that the Foo::Bar() method does Abc.
-TEST(ModifierTest, Decorate) {
+TEST(TransformerParallelTest, Decorate) {
 
   Options options;
   options.xStride = 16;
@@ -49,7 +49,7 @@ TEST(ModifierTest, Decorate) {
 }
 
 // Tests that Foo does Xyz.
-TEST(ModifierTest, AndSing) {
+TEST(TransformerParallelTest, AndSing) {
   // Exercises the Xyz feature of Foo.
 }
 
