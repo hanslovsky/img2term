@@ -12,18 +12,18 @@
 
 namespace img2term {
 
-class AveragingStrategyBase;
+class MatchingStrategyBase;
 
 class ModifierColor : public ModifierDecorator {
  public:
-  typedef std::shared_ptr<AveragingStrategyBase> AveragingStrategyPtr;
+  typedef std::unique_ptr<MatchingStrategyBase> MatchingPtr;
 
   ModifierColor() = delete;
-  ModifierColor( AveragingStrategyPtr );
+  ModifierColor( MatchingPtr );
  protected:
   virtual std::string generate_own_string( vigra::MultiArrayView<3, uint> patch ) const;
  private:
-  AveragingStrategyPtr averaging_;
+  MatchingPtr matching_;
 };
 
 } /* namespace img2term */
