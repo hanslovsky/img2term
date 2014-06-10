@@ -14,7 +14,7 @@ class Color {
  public:
   typedef vigra::TinyVector<uint, 1> GrayScale;
   typedef vigra::TinyVector<uint, 3> RGB;
-  typedef vigra::MultiArrayView<1, uint> VigraColor;
+  typedef vigra::MultiArray<1, uint> VigraColor;
   
   virtual std::string to_string() const = 0;
   virtual void operator() ( const VigraColor& color ) = 0;
