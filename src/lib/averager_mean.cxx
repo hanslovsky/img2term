@@ -1,5 +1,4 @@
 // stl
-#include <iostream>
 
 // vigra
 #include <vigra/multi_array.hxx>
@@ -27,7 +26,6 @@ Color::VigraColor AveragerMean::operator() ( const vigra::MultiArrayView<3, uint
   }
 
   result[0] /= count;
-
   return result;
 
 }

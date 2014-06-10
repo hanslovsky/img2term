@@ -2,6 +2,7 @@
 
 // stl
 #include <memory>
+#include <string>
 
 // vigra
 #include <vigra/multi_array.hxx>
@@ -10,17 +11,14 @@
 namespace img2term
 {
 
-class ColorBase;
-
-class Averager;
+class AveragerBase;
 
 class MatchingBase
 {
  public:
-  typedef std::unique_ptr<ColorBase> ColorPtr;
-  typedef std::unique_ptr<Averager> AveragerPtr;
+  typedef std::shared_ptr<AveragerBase> AveragerPtr;
 
-  virtual ColorPtr match( vigra::MultiArrayView<3, uint> patch ) const;
+  virtual std::string match( vigra::MultiArrayView<3, uint> patch ) const = 0;
 };
 
 } /* namespace img2term */

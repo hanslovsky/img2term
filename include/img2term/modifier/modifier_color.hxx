@@ -12,14 +12,15 @@
 
 namespace img2term {
 
-class MatchingStrategyBase;
+class MatchingBase;
 
 class ModifierColor : public ModifierDecorator {
  public:
-  typedef std::unique_ptr<MatchingStrategyBase> MatchingPtr;
+  typedef std::shared_ptr<MatchingBase> MatchingPtr;
 
   ModifierColor() = delete;
   ModifierColor( MatchingPtr );
+  ModifierColor( std::shared_ptr<ModifierBase> modifier, MatchingPtr matching_ );
  protected:
   virtual std::string generate_own_string( vigra::MultiArrayView<3, uint> patch ) const;
  private:

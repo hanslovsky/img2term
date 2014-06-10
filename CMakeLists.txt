@@ -31,13 +31,13 @@ endif(GTEST_FOUND)
 
 INCLUDE_DIRECTORIES("${PROJECT_SOURCE_DIR}/include/")
 
-FILE(GLOB LIB_CXX "src/lib/line*.cxx" "src/lib/modifier*.cxx" "src/lib/transformer*" "src/lib/color*cxx" "src/lib/averager*cxx")
+FILE(GLOB LIB_CXX "src/lib/line*.cxx" "src/lib/modifier*.cxx" "src/lib/transformer*" "src/lib/color*cxx" "src/lib/averager*cxx" "src/lib/matching*.cxx")
 ADD_LIBRARY(img2term SHARED ${LIB_CXX})
-# ADD_EXECUTABLE(img2term_app src/bin/img2term_app.cxx)
-# SET_TARGET_PROPERTIES(img2term_app PROPERTIES OUTPUT_NAME img2term)
+ADD_EXECUTABLE(img2term_app2 src/bin/img2term_app2.cxx)
+SET_TARGET_PROPERTIES(img2term_app2 PROPERTIES OUTPUT_NAME img2term2)
 
 TARGET_LINK_LIBRARIES(img2term ${Boost_LIBRARIES})
-# TARGET_LINK_LIBRARIES(img2term_app img2term ${VIGRA_IMPEX_LIBRARY})
+TARGET_LINK_LIBRARIES(img2term_app2 img2term ${VIGRA_IMPEX_LIBRARY})
 
 # INSTALL(TARGETS img2term LIBRARY DESTINATION lib)
 # INSTALL(TARGETS img2term_app RUNTIME DESTINATION bin)
