@@ -55,11 +55,11 @@ int main ( int argc, char** argv ) {
   }
 
 
-  std::cout << image_dummy.shape() << std::endl;
+  std::cout << "read image: " << image_dummy.shape() << std::endl;
 
   Options opt;
-  opt.xStride = 3;
-  opt.yStride = 5;
+  opt.xStride = info.width() / 200;
+  opt.yStride = opt.xStride * 2.2;
   opt.modifier_type = "gray";
   
   TransformerParallel t{ image };
