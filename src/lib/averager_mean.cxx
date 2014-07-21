@@ -14,7 +14,6 @@ namespace img2term
 Color::VigraColor AveragerMean::operator() ( const vigra::MultiArrayView<3, uint> patch ) const
 {
   patch[0];
-  
 
   vigra::MultiArray<1, uint> result( vigra::Shape1( 1 ), 0u );
 

@@ -22,9 +22,9 @@ ModifierColor::ModifierColor( MatchingPtr matching_ ) :
 }
 
 
-ModifierColor::ModifierColor( std::shared_ptr<ModifierBase> modifier, MatchingPtr matching_ ) :
+ModifierColor::ModifierColor( std::shared_ptr<ModifierBase> modifier, MatchingPtr matching ) :
     ModifierDecorator( modifier ),
-    matching_( matching_ )
+    matching_( matching )
 {
 
 }
