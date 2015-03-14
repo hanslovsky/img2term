@@ -33,6 +33,7 @@ std::string Line::operator() ( const vigra::MultiArrayView<3, uint> row ) const
         );
     res.append( modifier_->generate( patch ) );
   }
+  res.append( "\033[m" ); // workaround - what will happen in grayscale case?
   return res;
 }
 
