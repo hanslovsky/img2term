@@ -6,6 +6,8 @@ SET(CMAKE_CXX_FLAGS_RELEASE "-O3 -Werror -DNDEBUG" CACHE STRING "CXX Flags relea
 
 PROJECT(img2term)
 
+INCLUDE_DIRECTORIES("${PROJECT_SOURCE_DIR}/include/")
+
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake_extensions/)
 FIND_PACKAGE(VIGRA REQUIRED)
 if (VIGRA_FOUND)
@@ -24,12 +26,15 @@ endif(GTEST_FOUND)
 
 
 set(WITH_PYTHON "0" CACHE BOOL "Build python libraries.")
+if (WITH_PYTHON)
+  ADD_SUBDIRECTORY( src/python )
+endif(WITH_PYTHON)
 
 
 
 
 
-INCLUDE_DIRECTORIES("${PROJECT_SOURCE_DIR}/include/")
+
 
 FILE(GLOB LIB_CXX "src/lib/line*.cxx" "src/lib/modifier*.cxx" "src/lib/transformer*" "src/lib/color*cxx" "src/lib/averager*cxx" "src/lib/matching*.cxx" "src/lib/distance*cxx")
 ADD_LIBRARY(img2term SHARED ${LIB_CXX})
@@ -45,7 +50,3 @@ TARGET_LINK_LIBRARIES(img2term_app2 img2term ${VIGRA_IMPEX_LIBRARY})
 ENABLE_TESTING()
 
 ADD_SUBDIRECTORY( test )
-
-if (WITH_PYTHON)
-  ADD_SUBDIRECTORY( src/python )
-endif(WITH_PYTHON)
