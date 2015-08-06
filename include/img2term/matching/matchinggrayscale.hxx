@@ -41,7 +41,7 @@ namespace img2term
 {
 	
 	template <typename T, int SIZE>
-	class MatchingGrayScale : MatchingBase<T, SIZE>
+	class MatchingGrayScale : public MatchingBase<T, SIZE>
 	{
 	public:
 		

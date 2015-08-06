@@ -33,6 +33,8 @@
 namespace img2term
 {
 	
+	std::initializer_list<char> GRAYSCALE_DEFAULT { ' ', '.', ',', '-', ':', '+', '&', '#', '@' };
+	
 	typedef std::initializer_list< std::initializer_list< uint > > ColorList;
 
 	ColorList COLOR_8 = {

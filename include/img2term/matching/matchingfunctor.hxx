@@ -39,7 +39,7 @@ namespace img2term
 {
 
 	template <typename T, int SIZE, typename FUNCTOR=std::function<std::string( const PixelType<T, SIZE> )> >
-	class MatchingFunctor : MatchingBase<T, SIZE>
+	class MatchingFunctor : public MatchingBase<T, SIZE>
 	{
 	public:
 		MatchingFunctor() = delete;

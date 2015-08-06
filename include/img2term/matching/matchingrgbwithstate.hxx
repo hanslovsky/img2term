@@ -62,13 +62,14 @@ namespace img2term
 				}
 			}
 			std::stringstream ss;
-			ss << "\033[38;05;" << minimum_index << "m\033[48;05;" << minimum_index << "m";
+			ss << "\033[38;05;" << minimum_index << "m";
+			ss << "\033[48;05;" << minimum_index << "m";
 			return ss.str();
 		};
 	}
 
 	template <typename T, int SIZE>
-	class MatchingRGBWithState : MatchingBase<T, SIZE>
+	class MatchingRGBWithState : public MatchingBase<T, SIZE>
 	{
 	public:
 		typedef std::function<std::string( PixelType<T, SIZE> )> SelectorType;

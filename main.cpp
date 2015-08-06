@@ -1,7 +1,12 @@
 // stl
 #include <algorithm>
 #include <iostream>
+#include <memory>
 #include <string>
+#include <vector>
+
+// boost
+#include <boost/program_options.hpp>
 
 // vigra
 #include <vigra/multi_array.hxx>
@@ -11,6 +16,7 @@
 
 // img2term
 #include "img2term/img2term.hxx"
+#include "img2term/img2term_colors.hxx"
 #include "img2term/averaging/averagingmean.hxx"
 #include "img2term/averaging/averagingfunctor.hxx"
 #include "img2term/matching/matchingfunctor.hxx"
@@ -26,40 +32,187 @@ void doTest(CLASS c)
 std::string ock() { return "ock"; }
 
 using namespace img2term;
+namespace bpo = boost::program_options;
 
-int main(int, char**) {
-	const std::string fn = "/home/phil/Downloads/terminator.jpg";
+class HelpRequested : public bpo::error
+{
+public:
+	HelpRequested() = default;
+	HelpRequested( const std::string& message ) : bpo::error( message ) {};
+};
+
+auto readOptions( int argc, char** argv, bpo::variables_map& vm )
+{
+	auto desc = bpo::options_description{ "img2term options" };
+	auto desc_color = bpo::options_description{ "color method options for --method=color" };
+	auto desc_grayscale = bpo::options_description{ "grayscale method options for --method=grayscale" };
+	
+	auto legal_methods = { "color", "grayscale" };
+	
+	desc.add_options()
+		( "help,h", "Print help" )
+		( "method,m", bpo::value<std::string>()->default_value( "color" ), "Method for converting image to term representation." )
+		( "step-x,x", bpo::value<int>()->default_value( 10 ), "Width of patches to be represented by char (sequence)." )
+		( "step-y,y", bpo::value<int>()->default_value( 20 ), "Height of patches to be represented by char (sequence)." )
+		;
+		
+	desc_color.add_options()
+		( "char-sequence,c", bpo::value<std::string>()->default_value( "@" ), "Character sequence representing one pixel in color mode." )
+		( "color-background,b", bpo::value<bool>()->default_value( false ), "Paint background." )
+		( "color-foreground,f", bpo::value<bool>()->default_value( true ),  "Paint foreground." )
+		;
+		
+	desc_grayscale.add_options()
+		( "char-sequence,c", bpo::value<std::string>()->default_value( GRAYSCALE_DEFAULT ),
+		  "Character sequence representing one pixel in color mode." )
+		;
+	
+	auto desc_visible = desc;
+	desc_visible
+		.add( desc_color )
+		.add( desc_grayscale )
+		;
+	// positional options, not visible to user
+	desc.add_options()
+		( "filename", bpo::value< std::vector<std::string> >()->required(), "Input files" );
+		;
+	
+	bpo::positional_options_description pos;
+	pos.add( "filename", -1 );
+	
+	auto print_help = [&desc_visible,&pos] ( auto& stream )
+	{
+		stream << "\nimg2term [options] filename [filename...]\n" << std::endl << desc_visible << std::endl;
+	};
+		
+	try {
+		bpo::store(
+			bpo::command_line_parser( argc, argv )
+				.options( desc )
+				.allow_unregistered()
+				.positional( pos )
+				.run()
+				,
+			vm
+		);
+		if ( vm.count("help")  )
+		{
+			print_help( std::cout );
+			throw HelpRequested("Asked for help!");
+		}
+		
+		std::string method = vm["method"].as<std::string>();
+		if( std::find( begin( legal_methods ), end( legal_methods ), method ) == end( legal_methods ) )
+		{
+			throw bpo::error( "'" + method + "'" + " not a legal choice for --method." );
+		} else if ( method == "color" )
+		{
+			bpo::store(
+				bpo::command_line_parser( argc, argv )
+				.options( desc.add( desc_color ) )
+				.positional( pos )
+				.run()
+				,
+			  vm
+			);
+		} else if ( method == "grayscale" )
+		{
+			bpo::store(
+				bpo::command_line_parser( argc, argv )
+				.options( desc.add( desc_grayscale ) )
+				.positional( pos )
+				.run()
+				,
+			  vm
+			);
+		}
+		
+		bpo::notify( vm );
+	} catch ( const HelpRequested& h )
+	{
+		throw h;
+	} catch ( const bpo::error& e )
+	{
+		print_help( std::cerr );
+		std::cerr << e.what() << std::endl;
+		throw e;
+	}
+	
+	return desc;
+}
+
+int main( int argc, char** argv ) {
+	
+	bpo::variables_map vm;
+	
+	try {
+		readOptions( argc, argv, vm );
+	} catch ( const HelpRequested& e )
+	{
+		return 1;
+	} catch ( std::exception& e )
+	{
+		return 2;
+	}
+	
+	const std::string fn = vm["filename"].as<std::vector<std::string> >()[0];
 	vigra::ImageImportInfo info{ fn.c_str() };
-	std::cout << "Image information:\n";
-	std::cout << "  file format: " << info.getFileType() << std::endl;
-	std::cout << "  width:       " << info.width() << std::endl;
-	std::cout << "  height:      " << info.height() << std::endl;
-	std::cout << "  pixel type:  " << info.getPixelType() << std::endl;
-	std::cout << "  color image: ";
-	if (info.isColor())    std::cout << "yes (";
-	else                        std::cout << "no  (";
-	std::cout << "number of channels: " << info.numBands() << ")\n";
 	
 	Image<uint, 3> image( info.shape() );
-	int stepX = 10;
-	int stepY = 20;
+	int stepX = vm["step-x"].as<int>();
+	int stepY = vm["step-y"].as<int>();
 	vigra::importImage( info, vigra::destImage( image ) );
-// 	for ( const auto& i : image ) std::cout << i << std::endl;
+
 	
-// 	auto image = img2term::Image<uint, 3>(5,10); // width, height
-// 	*( image.begin()->begin() ) = 5;
-	std::cout << *(image.begin()+(1920*540+960)) << std::endl;
-	img2term::MatchingGrayScale<uint, 3> match{};
-	auto match2 = img2term::MatchingFunctor<uint, 3>( [](const PixelType<uint, 3>&) -> std::string{ return "ALPHA BETA GAMMA"; }  );
-	std::cout << match.match( *(image.begin()+(1920*540+960)) ) << std::endl;
-	doTest([]() -> std::string {return "MIZZGE";});
-	doTest(&ock);
+	auto create_match = [&vm]( const std::string& method_string, const std::string& char_sequence ) -> std::unique_ptr<MatchingBase<double, 
+3> >
+	{
+		MatchingBase<double, 3>* result = nullptr;
+// 		std::cout << ( method_string == "color" ) << std::endl;
+		if ( method_string == "color" )
+		{
+			bool fg = vm["color-foreground"].as<bool>();
+			bool bg = vm["color-background"].as<bool>();
+			std::cout << fg << " " << bg << ::std::endl;
+			auto selector = [fg,bg] ( auto pixel ) -> std::string 
+			{
+				double minimum_distance = std::numeric_limits< double >::max();
+				int minimum_index = 0;
+				for( auto c = std::begin( COLOR_256 ); c != std::end( COLOR_256 ); ++c )
+				{
+					double distance = 0.0;
+					for ( uint i = 0; i < c->size(); ++i )
+					{
+						double diff = pixel[i] - *( begin( *c ) +i );
+						distance += diff*diff;
+					}
+					if ( distance < minimum_distance )
+					{
+						minimum_distance = distance;
+						minimum_index = c - std::begin( COLOR_256 );
+					}
+				}
+				std::stringstream ss;
+				if ( fg )
+					ss << "\033[38;05;" << minimum_index << "m";
+				if ( bg )
+					ss << "\033[48;05;" << minimum_index << "m";
+				return ss.str();
+			};
+			result = new MatchingRGBWithState<double, 3>( char_sequence, selector );
+		}
+		else if ( method_string == "grayscale" )
+			result = new MatchingGrayScale<double, 3>( &*std::begin( char_sequence ), &*std::end( char_sequence ) );
+		else
+			result = nullptr;
+		return std::unique_ptr<MatchingBase< double, 3> >( result );
+	};
 	
-// 	AveragingFunctor<uint, double, 3>( [](const ImageView<uint, 3>& img, PixelType<double, 3>& mean) -> void { mean += 
-// *(img.begin()+(1920*540+960)); } )( 
-// image, mean );
-// 	std::cout << mean << std::endl;
-	MatchingRGBWithState<double, 3> state;
+	const std::string& method = vm["method"].as<std::string>();
+	const std::string& char_sequence = vm["char-sequence"].as<std::string>();
+	
+	std::unique_ptr<MatchingBase<double, 3> > match = create_match( method, char_sequence );
+	const std::string end_of_line = method == "color" ? "\033[m" : "";
 	std::stringstream ss;
 	for ( int y = 0; y < info.height(); y += stepY )
 	{
@@ -75,11 +228,11 @@ int main(int, char**) {
 // 			std::cout << subarray.shape() << std::endl;
 			PixelType< double, 3 > mean;
 			AveragingMean<uint, double, 3>()( subarray, mean );
-			ss << state.match( mean );
+			ss << match->match( mean );
 		}
-		ss << '\n';
+		ss << end_of_line << '\n';
 	}
-	std::cout << ss.str() << std::endl;
-	std::cout << state.match( PixelType<double, 3>() ) << std::endl;
+	std::cout << ss.str();
+	std::cout.flush();
     return 0;
 }
