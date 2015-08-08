@@ -23,14 +23,6 @@
 #include "img2term/matching/matchinggrayscale.hxx"
 #include "img2term/matching/matchingrgbwithstate.hxx"
 
-template <typename CLASS>
-void doTest(CLASS c)
-{
-	std::cout << c() << std::endl;
-}
-
-std::string ock() { return "ock"; }
-
 using namespace img2term;
 namespace bpo = boost::program_options;
 
@@ -46,8 +38,9 @@ auto readOptions( int argc, char** argv, bpo::variables_map& vm )
 	auto desc = bpo::options_description{ "img2term options" };
 	auto desc_color = bpo::options_description{ "color method options for --method=color" };
 	auto desc_grayscale = bpo::options_description{ "grayscale method options for --method=grayscale" };
+	auto desc_combined = bpo::options_description{ "combined color and grayscale method options for --method=combined" };
 	
-	auto legal_methods = { "color", "grayscale" };
+	auto legal_methods = { "color", "grayscale", "combined" };
 	
 	desc.add_options()
 		( "help,h", "Print help" )
@@ -66,11 +59,17 @@ auto readOptions( int argc, char** argv, bpo::variables_map& vm )
 		( "char-sequence,c", bpo::value<std::string>()->default_value( GRAYSCALE_DEFAULT ),
 		  "Character sequence representing one pixel in color mode." )
 		;
-	
+		
+	desc_combined.add_options()
+		( "char-sequence,c", bpo::value<std::string>()->default_value( GRAYSCALE_DEFAULT ),
+		  "Character sequence representing one pixel in color mode." )
+		;
+		
 	auto desc_visible = desc;
 	desc_visible
 		.add( desc_color )
 		.add( desc_grayscale )
+		.add( desc_combined )
 		;
 	// positional options, not visible to user
 	desc.add_options()
@@ -125,6 +124,16 @@ auto readOptions( int argc, char** argv, bpo::variables_map& vm )
 				,
 			  vm
 			);
+		} else if ( method == "combined" )
+		{
+			bpo::store(
+				bpo::command_line_parser( argc, argv )
+				.options( desc.add( desc_combined ) )
+				.positional( pos )
+				.run()
+				,
+			  vm
+			);
 		}
 		
 		bpo::notify( vm );
@@ -168,12 +177,10 @@ int main( int argc, char** argv ) {
 3> >
 	{
 		MatchingBase<double, 3>* result = nullptr;
-// 		std::cout << ( method_string == "color" ) << std::endl;
-		if ( method_string == "color" )
+		if ( method_string == "color" || method_string == "combined" )
 		{
-			bool fg = vm["color-foreground"].as<bool>();
-			bool bg = vm["color-background"].as<bool>();
-			std::cout << fg << " " << bg << ::std::endl;
+			bool fg = method_string == "color" ? vm["color-foreground"].as<bool>() : true;
+			bool bg = method_string == "color" ? vm["color-background"].as<bool>() : false;
 			auto selector = [fg,bg] ( auto pixel ) -> std::string 
 			{
 				double minimum_distance = std::numeric_limits< double >::max();
@@ -199,7 +206,13 @@ int main( int argc, char** argv ) {
 					ss << "\033[48;05;" << minimum_index << "m";
 				return ss.str();
 			};
-			result = new MatchingRGBWithState<double, 3>( char_sequence, selector );
+			if ( method_string == "color" )
+				result = new MatchingRGBWithState<double, 3>( char_sequence, selector );
+			else
+			{
+				MatchingGrayScale<double, 3> gs{ &*std::begin( char_sequence ), &*std::end( char_sequence ) };
+				result = new MatchingRGBWithState<double, 3>( [gs] ( const auto& patch ) { return gs.match( patch ); }, selector );
+			}
 		}
 		else if ( method_string == "grayscale" )
 			result = new MatchingGrayScale<double, 3>( &*std::begin( char_sequence ), &*std::end( char_sequence ) );
@@ -217,15 +230,12 @@ int main( int argc, char** argv ) {
 	for ( int y = 0; y < info.height(); y += stepY )
 	{
 		int yMax = std::min( y + stepY, info.height() );
-// 		std::cout << y << std::endl;
 		for ( int x = 0; x < info.width(); x += stepX )
 		{
-// 			std::cout << x << std::endl;
 			int xMax = std::min( x + stepX, info.width() );
 			vigra::Shape2 lower { x, y };
 			vigra::Shape2 upper { xMax, yMax };
 			const auto& subarray = image.subarray( lower, upper );
-// 			std::cout << subarray.shape() << std::endl;
 			PixelType< double, 3 > mean;
 			AveragingMean<uint, double, 3>()( subarray, mean );
 			ss << match->match( mean );

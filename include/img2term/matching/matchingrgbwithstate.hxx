@@ -72,21 +72,22 @@ namespace img2term
 	class MatchingRGBWithState : public MatchingBase<T, SIZE>
 	{
 	public:
-		typedef std::function<std::string( PixelType<T, SIZE> )> SelectorType;
+		typedef std::function<std::string( const PixelType<T, SIZE>& )> SelectorType;
 		typedef PixelType<T, SIZE> State;
 		MatchingRGBWithState() = default;
 		MatchingRGBWithState( const std::string& put_string );
 		MatchingRGBWithState( SelectorType selector  );
 		MatchingRGBWithState( const std::string& put_string, SelectorType selector  );
-		MatchingRGBWithState( State&& initial_state, const std::string& put_string, SelectorType selector );
+		MatchingRGBWithState( SelectorType put_string, SelectorType selector  );
+		MatchingRGBWithState( State&& initial_state, SelectorType put_string, SelectorType selector );
 		~MatchingRGBWithState() override = default;
 		
 		std::string match( const PixelType<T, SIZE>& patch ) const override;
 		
 	private:
 		State state_ = State( -1, -1, -1 );
-		const std::string put_string_ = "#";
-		SelectorType selector_ = selector;
+		const SelectorType put_string_ = [] ( PixelType<T, SIZE> ) -> std::string { return "@"; };
+		const SelectorType selector_ = selector;
 	};
 }
 
@@ -95,7 +96,7 @@ namespace img2term
 {
 	template <typename T, int SIZE>
 	MatchingRGBWithState<T, SIZE>::MatchingRGBWithState( const std::string& put_string ) :
-	put_string_( put_string )
+	put_string_( [&put_string] ( PixelType<T, SIZE> ) { return put_string; } )
 	{
 		
 	}
@@ -109,14 +110,22 @@ namespace img2term
 	
 	template <typename T, int SIZE>
 	MatchingRGBWithState<T, SIZE>::MatchingRGBWithState( const std::string& put_string, SelectorType selector ) :
-	put_string_( put_string ),
+	put_string_( [&put_string] ( PixelType<T, SIZE> ) { return put_string; } ),
 	selector_( selector )
 	{
 		
 	}
 	
 	template <typename T, int SIZE>
-	MatchingRGBWithState<T, SIZE>::MatchingRGBWithState( State&& initial_state, const std::string& put_string, SelectorType selector ) :
+	MatchingRGBWithState<T, SIZE>::MatchingRGBWithState( SelectorType put_string, SelectorType selector ) :
+	put_string_( put_string ),
+	selector_( selector )
+	{
+
+	}
+	
+	template <typename T, int SIZE>
+	MatchingRGBWithState<T, SIZE>::MatchingRGBWithState( State&& initial_state, SelectorType put_string, SelectorType selector ) :
 		state_( initial_state ),
 		put_string_( put_string ),
 		selector_( selector )
@@ -132,7 +141,7 @@ namespace img2term
 		{
 			ss << selector_( patch );
 		}
-		ss << put_string_;
+		ss << put_string_( patch );
 		return ss.str();
 	}
 
