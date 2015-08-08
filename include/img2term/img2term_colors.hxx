@@ -36,7 +36,7 @@ namespace img2term
 	std::initializer_list<char> GRAYSCALE_DEFAULT { ' ', '.', ',', '-', ':', '+', '&', '#', '@' };
 	
 	typedef std::initializer_list< std::initializer_list< uint > > ColorList;
-
+	
 	ColorList COLOR_8 = {
 		{ 0, 0, 0 },
 		{ 205, 0, 0 },
@@ -327,6 +327,27 @@ namespace img2term
 		{ 228, 228, 228 },
 		{ 238, 238, 238 }
 	};
+	
+	template <int COLORS>
+	const ColorList& get_colors();
+	
+	template <>
+	const ColorList& get_colors<8>()
+	{
+		return COLOR_8;
+	}
+	
+	template <>
+	const ColorList& get_colors<16>()
+	{
+		return COLOR_16;
+	}
+	
+	template <>
+	const ColorList& get_colors<256>()
+	{
+		return COLOR_256;
+	}
 
 }
 
