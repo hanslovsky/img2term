@@ -19,12 +19,40 @@
 #include "img2term/img2term_colors.hxx"
 #include "img2term/averaging/averagingmean.hxx"
 #include "img2term/averaging/averagingfunctor.hxx"
+#include "img2term/matching/matchingbase.hxx"
 #include "img2term/matching/matchingfunctor.hxx"
 #include "img2term/matching/matchinggrayscale.hxx"
 #include "img2term/matching/matchingrgbwithstate.hxx"
 
+// img2term_app
+#include "img2term/app/typedefs.hxx"
+
+namespace img2term
+{
+	std::map<std::string,  MethodPair> mapping;
+	
+	void add_mapping( const std::string method, MethodPair method_pair )
+	{
+		mapping[method] = std::move( method_pair );
+	}
+	
+	void register_grayscale();
+	
+	void register_color();
+	
+	void register_combined();
+	
+	void register_methods()
+	{
+		register_grayscale();
+		register_color();
+		register_combined();
+	}
+}
+
 using namespace img2term;
-namespace bpo = boost::program_options;
+
+
 
 class HelpRequested : public bpo::error
 {
@@ -36,11 +64,8 @@ public:
 auto readOptions( int argc, char** argv, bpo::variables_map& vm )
 {
 	auto desc = bpo::options_description{ "img2term options" };
-	auto desc_color = bpo::options_description{ "color method options for --method=color" };
-	auto desc_grayscale = bpo::options_description{ "grayscale method options for --method=grayscale" };
-	auto desc_combined = bpo::options_description{ "combined color and grayscale method options for --method=combined" };
 	
-	auto legal_methods = { "color", "grayscale", "combined" };
+	register_methods();
 	
 	desc.add_options()
 		( "help,h", "Print help" )
@@ -49,29 +74,10 @@ auto readOptions( int argc, char** argv, bpo::variables_map& vm )
 		( "step-y,y", bpo::value<int>()->default_value( 20 ), "Height of patches to be represented by char (sequence)." )
 		;
 		
-	desc_color.add_options()
-		( "char-sequence,c", bpo::value<std::string>()->default_value( "@" ), "Character sequence representing one pixel in color mode." )
-		( "color-background,b", bpo::value<bool>()->default_value( false ), "Paint background." )
-		( "color-foreground,f", bpo::value<bool>()->default_value( true ),  "Paint foreground." )
-		( "n-colors,n", bpo::value<int>()->default_value( 256 ), "Number of colors to be used (8,16,256)." )
-		;
-		
-	desc_grayscale.add_options()
-		( "char-sequence,c", bpo::value<std::string>()->default_value( GRAYSCALE_DEFAULT ),
-		  "Character sequence representing one pixel in color mode." )
-		;
-		
-	desc_combined.add_options()
-		( "char-sequence,c", bpo::value<std::string>()->default_value( GRAYSCALE_DEFAULT ),
-		  "Character sequence representing one pixel in color mode." )
-		( "n-colors,n", bpo::value<int>()->default_value( 256 ), "Number of colors to be used (8,16,256)." )
-		;
-		
 	auto desc_visible = desc;
-	desc_visible
-		.add( desc_color )
-		.add( desc_grayscale )
-		.add( desc_combined )
+	for ( const auto& o : mapping )
+		desc_visible.add( *( o.second.second ) );
+
 		;
 	// positional options, not visible to user
 	desc.add_options()
@@ -103,41 +109,25 @@ auto readOptions( int argc, char** argv, bpo::variables_map& vm )
 		}
 		
 		std::string method = vm["method"].as<std::string>();
-		if( std::find( begin( legal_methods ), end( legal_methods ), method ) == end( legal_methods ) )
+		const auto& mp = std::find_if( begin( mapping ), end( mapping ), [&method] ( const auto& s ) { return s.first == method; } );
+		if( mp == end( mapping ) )
 		{
 			throw bpo::error( "'" + method + "'" + " not a legal choice for --method." );
-		} else if ( method == "color" )
-		{
-			bpo::store(
-				bpo::command_line_parser( argc, argv )
-				.options( desc.add( desc_color ) )
-				.positional( pos )
-				.run()
-				,
-			  vm
-			);
-		} else if ( method == "grayscale" )
-		{
-			bpo::store(
-				bpo::command_line_parser( argc, argv )
-				.options( desc.add( desc_grayscale ) )
-				.positional( pos )
-				.run()
-				,
-			  vm
-			);
-		} else if ( method == "combined" )
-		{
-			bpo::store(
-				bpo::command_line_parser( argc, argv )
-				.options( desc.add( desc_combined ) )
-				.positional( pos )
-				.run()
-				,
-			  vm
-			);
 		}
-		
+		else
+		{
+			bpo::store(
+				bpo::command_line_parser( argc, argv )
+					.options( desc.add( *( mp->second.second ) ) )
+					.positional( pos )
+					.run()
+					,
+				vm
+			);
+				
+		}
+	
+	
 		bpo::notify( vm );
 	} catch ( const HelpRequested& h )
 	{
@@ -173,62 +163,10 @@ int main( int argc, char** argv ) {
 	int stepX = vm["step-x"].as<int>();
 	int stepY = vm["step-y"].as<int>();
 	vigra::importImage( info, vigra::destImage( image ) );
-
-	
-	auto create_match = [&vm]( const std::string& method_string, const std::string& char_sequence ) -> std::unique_ptr<MatchingBase<double, 
-3> >
-	{
-		MatchingBase<double, 3>* result = nullptr;
-		if ( method_string == "color" || method_string == "combined" )
-		{
-			bool fg = method_string == "color" ? vm["color-foreground"].as<bool>() : true;
-			bool bg = method_string == "color" ? vm["color-background"].as<bool>() : false;
-			auto selector = [fg,bg,&vm] ( auto pixel ) -> std::string 
-			{
-				double minimum_distance = std::numeric_limits< double >::max();
-				int minimum_index = 0;
-				int n_colors = vm["n-colors"].as<int>();
-				auto colors = n_colors == 8 ? get_colors<8>() : n_colors == 16 ? get_colors<16>() : get_colors<256>();
-				for( auto c = std::begin( colors ); c != std::end( colors ); ++c )
-				{
-					double distance = 0.0;
-					for ( uint i = 0; i < c->size(); ++i )
-					{
-						double diff = pixel[i] - *( begin( *c ) +i );
-						distance += diff*diff;
-					}
-					if ( distance < minimum_distance )
-					{
-						minimum_distance = distance;
-						minimum_index = c - std::begin( COLOR_256 );
-					}
-				}
-				std::stringstream ss;
-				if ( fg )
-					ss << "\033[38;05;" << minimum_index << "m";
-				if ( bg )
-					ss << "\033[48;05;" << minimum_index << "m";
-				return ss.str();
-			};
-			if ( method_string == "color" )
-				result = new MatchingRGBWithState<double, 3>( char_sequence, selector );
-			else
-			{
-				MatchingGrayScale<double, 3> gs{ &*std::begin( char_sequence ), &*std::end( char_sequence ) };
-				result = new MatchingRGBWithState<double, 3>( [gs] ( const auto& patch ) { return gs.match( patch ); }, selector );
-			}
-		}
-		else if ( method_string == "grayscale" )
-			result = new MatchingGrayScale<double, 3>( &*std::begin( char_sequence ), &*std::end( char_sequence ) );
-		else
-			result = nullptr;
-		return std::unique_ptr<MatchingBase< double, 3> >( result );
-	};
 	
 	const std::string& method = vm["method"].as<std::string>();
-	const std::string& char_sequence = vm["char-sequence"].as<std::string>();
 	
-	std::unique_ptr<MatchingBase<double, 3> > match = create_match( method, char_sequence );
+	std::unique_ptr<MatchingBase<double, 3> > match = mapping[method].first( vm );
 	const std::string end_of_line = method == "color" ? "\033[m" : "";
 	std::stringstream ss;
 	for ( int y = 0; y < info.height(); y += stepY )

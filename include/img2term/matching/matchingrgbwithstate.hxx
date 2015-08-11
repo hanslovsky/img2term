@@ -89,6 +89,21 @@ namespace img2term
 		const SelectorType put_string_ = [] ( PixelType<T, SIZE> ) -> std::string { return "@"; };
 		const SelectorType selector_ = selector;
 	};
+	
+	
+	template<typename T, int SIZE, int COLORS>
+	class DefaultSelector
+	{
+	public:
+		DefaultSelector() = delete;
+		DefaultSelector( bool fg, bool bg );
+		std	::string operator()( const PixelType<T, SIZE>& pixel );
+		
+	private:
+		const bool fg_;
+		const bool bg_;
+		const ColorList colors_ = get_colors<COLORS>();
+	};
 }
 
 
@@ -142,6 +157,42 @@ namespace img2term
 			ss << selector_( patch );
 		}
 		ss << put_string_( patch );
+		return ss.str();
+	}
+	
+	
+	template <typename T, int SIZE, int COLORS>
+	DefaultSelector<T, SIZE, COLORS>::DefaultSelector( bool fg, bool bg ) :
+		fg_( fg ),
+		bg_( bg )
+	{
+		
+	}
+	
+	template <typename T, int SIZE, int COLORS>
+	std	::string DefaultSelector<T, SIZE, COLORS>::operator()( const PixelType<T, SIZE>& pixel )
+	{
+		double minimum_distance = std::numeric_limits< double >::max();
+		int minimum_index = 0;
+		for( auto c = std::begin( colors_ ); c != std::end( colors_ ); ++c )
+		{
+			double distance = 0.0;
+			for ( uint i = 0; i < c->size(); ++i )
+			{
+				double diff = pixel[i] - *( begin( *c ) +i );
+				distance += diff*diff;
+			}
+			if ( distance < minimum_distance )
+			{
+				minimum_distance = distance;
+				minimum_index = c - std::begin( COLOR_256 );
+			}
+		}
+		std::stringstream ss;
+		if ( fg_ )
+			ss << "\033[38;05;" << minimum_index << "m";
+		if ( bg_ )
+			ss << "\033[48;05;" << minimum_index << "m";
 		return ss.str();
 	}
 
