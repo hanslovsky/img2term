@@ -22,7 +22,7 @@ namespace img2term
 	
 	typedef std::function<MatchingPtr( const bpo::variables_map& )> MatchingFactory;
 	
-	typedef std::unique_ptr<bpo::options_description> Description;
+	typedef bpo::options_description Description;
 	
 	typedef std::pair< MatchingFactory, Description > MethodPair;
 }

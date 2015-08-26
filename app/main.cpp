@@ -25,29 +25,12 @@
 #include "img2term/matching/matchingrgbwithstate.hxx"
 
 // img2term_app
+#include "img2term/app/register.hxx"
 #include "img2term/app/typedefs.hxx"
 
 namespace img2term
 {
-	std::map<std::string,  MethodPair> mapping;
-	
-	void add_mapping( const std::string method, MethodPair method_pair )
-	{
-		mapping[method] = std::move( method_pair );
-	}
-	
-	void register_grayscale();
-	
-	void register_color();
-	
-	void register_combined();
-	
-	void register_methods()
-	{
-		register_grayscale();
-		register_color();
-		register_combined();
-	}
+	std::map<std::string,  MethodPair> mapping = RegisterManager::getMethodsAndOptions();
 }
 
 using namespace img2term;
@@ -65,7 +48,7 @@ auto readOptions( int argc, char** argv, bpo::variables_map& vm )
 {
 	auto desc = bpo::options_description{ "img2term options" };
 	
-	register_methods();
+// 	register_methods();
 	
 	desc.add_options()
 		( "help,h", "Print help" )
@@ -76,7 +59,7 @@ auto readOptions( int argc, char** argv, bpo::variables_map& vm )
 		
 	auto desc_visible = desc;
 	for ( const auto& o : mapping )
-		desc_visible.add( *( o.second.second ) );
+		desc_visible.add( o.second.second );
 
 		;
 	// positional options, not visible to user
@@ -118,7 +101,7 @@ auto readOptions( int argc, char** argv, bpo::variables_map& vm )
 		{
 			bpo::store(
 				bpo::command_line_parser( argc, argv )
-					.options( desc.add( *( mp->second.second ) ) )
+					.options( desc.add( mp->second.second ) )
 					.positional( pos )
 					.run()
 					,
